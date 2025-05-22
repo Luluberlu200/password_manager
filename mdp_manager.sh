@@ -32,7 +32,8 @@ if [ ! -f "$FICHIER_ENC" ]; then
     echo "1. Mot de passe personnalisé"
     echo "2. Générer un mot de passe aléatoire"
     read -p "Entrez 1 ou 2 : " choix
-    
+    echo
+
     if [[ "$choix" == "1" ]]; then
     
 	    echo -n "Crée ton mot de passe maître : "
@@ -116,6 +117,7 @@ while true; do
         echo "5. [🚪] Quitter"
         echo
         read -p "📋 Entrez votre choix : " choice
+        echo
 
 	case "$choice" in
 	1)
@@ -146,6 +148,7 @@ while true; do
         ;;
     2)
     echo -e "\e[1m=== [📖] Consulter un mot de passe ===\e[0m"
+    echo
         # Déchiffrer temporairement le fichier pour consulter le mot de passe
         openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
