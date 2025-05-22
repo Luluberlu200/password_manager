@@ -102,7 +102,7 @@ echo "Fichier mis à jour et rechiffré avec succès."
 # === MENU ===
 # Affiche le menu principal
 while true; do 
-        echo "===Gestionnaire Password===="
+        echo "=== [🗝️] Gestionnaire de mot de passe ===="
         echo "1. Ajouter un mot de passe"
         echo "2. Consulter mot de passe"
 	    echo "3. Modification d'un/des mot(s) de passe"
@@ -113,6 +113,7 @@ while true; do
 	case "$choice" in
 	1)
 		echo "=== Ajouter un nouveau mot de passe ==="
+        read -p "Outil/logiciel/site : " id_logiciel
         read -p "Adresse mail / nom utilisateur : " id
         read -s -p "Mot de passe : " pwd
         echo
@@ -126,7 +127,7 @@ while true; do
         fi
 
         # Ajouter les nouvelles données au fichier dédié
-        echo "$id -> $pwd" >> "$TMPFILE"
+        echo "$id_logiciel : $id -> $pwd" >> "$TMPFILE"
 
         # Permet de rechiffrer le fichier après avoir ajouté les données
         openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
@@ -135,6 +136,24 @@ while true; do
         shred -u "$TMPFILE"
         
         echo "[✅] Mot de passe ajouté."
+        ;;
+    2)
+        echo "=== Consulter un mot de passe ==="
+
+        # Déchiffrer temporairement le fichier pour consulter le mot de passe
+        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        # Vérifie si le déchiffrement a réussi
+        if [ $? -ne 0 ]; then
+            echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
+            exit 1
+        fi
+
+        # Afficher le contenu du fichier temporaire
+        cat "$TMPFILE"
+
+        # Supprimer le fichier temporaire pour des raisons de sécurité
+        shred -u "$TMPFILE"
+        
         ;;
 	5)
 		 read -p "[❓] Êtes-vous sûr de vouloir quitter ? (o/n) : " confirm
