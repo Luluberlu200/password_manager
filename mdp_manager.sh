@@ -102,20 +102,27 @@ echo "Fichier mis à jour et rechiffré avec succès."
 # === MENU ===
 # Affiche le menu principal
 while true; do 
-        echo "=== [🗝️] Gestionnaire de mot de passe ===="
-        echo "1. Ajouter un mot de passe"
-        echo "2. Consulter mot de passe"
-	    echo "3. Modification d'un/des mot(s) de passe"
-        echo "4. Delete mot de passe"
-        echo "5. Quitter"
-        read -p "choix : " choice
+        echo
+        echo -e "\e[1m=== [🔑] Gestionnaire de mot de passe ===\e[0m"
+        echo
+        echo "1. [➕] Ajouter un mot de passe"
+        echo
+        echo "2. [📖] Consulter mot de passe"
+        echo
+        echo "3. [✏️] Modification d'un/des mot(s) de passe"
+        echo
+        echo "4. [🗑️] Delete mot de passe"
+        echo
+        echo "5. [🚪] Quitter"
+        echo
+        read -p "📋 Entrez votre choix : " choice
 
 	case "$choice" in
 	1)
-		echo "=== Ajouter un nouveau mot de passe ==="
-        read -p "Outil/logiciel/site : " id_logiciel
-        read -p "Adresse mail / nom utilisateur : " id
-        read -s -p "Mot de passe : " pwd
+		echo "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"
+        read -p "💻 Outil/logiciel/site : " id_logiciel
+        read -p "📧 Adresse mail / nom utilisateur : " id
+        read -s -p "🔒 Mot de passe : " pwd
         echo
 
         # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
@@ -138,8 +145,7 @@ while true; do
         echo "[✅] Mot de passe ajouté."
         ;;
     2)
-        echo "=== Consulter un mot de passe ==="
-
+    echo -e "\e[1m=== [📖] Consulter un mot de passe ===\e[0m"
         # Déchiffrer temporairement le fichier pour consulter le mot de passe
         openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
@@ -156,8 +162,8 @@ while true; do
         
         ;;
 	5)
-		 read -p "[❓] Êtes-vous sûr de vouloir quitter ? (o/n) : " confirm
-    			if [[ "$confirm" =~ ^[oO]$ ]]; then
+            read -p "\e[1m[❓] Êtes-vous sûr de vouloir quitter ? (o/n) :\e[0m" confirm    			
+            if [[ "$confirm" =~ ^[oO]$ ]]; then
        				echo "[👋] Au revoir !"
         			exit 0
     			else
