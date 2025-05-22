@@ -78,3 +78,37 @@ shred -u "$TMPFILE"
 
 echo "Fichier mis à jour et rechiffré avec succès."
 
+while true; do 
+        echo "===Gestionnaire Password===="
+        echo "1. Ajouter un mot de passe"
+        echo "2. Consulter mode de passe"
+	echo "3. Modification d'un/des mot(s) de passe"
+        echo "4. Delete mot de passe"
+        echo "5. Quitter"
+        read -p "choix : " choice
+
+	case "$choice" in
+	1)
+		echo "=== Ajouter un nouveau mot de passe ==="
+            	read -p "Adresse mail / nom utilisateur : " id
+           	read -s -p "Mot de passe : " pwd
+            	echo
+            	gpg -d "$PASSWORD_FILE" > temp.txt 2>/dev/null
+            	echo "$id -> $pwd" >> temp.txt
+            	gpg --symmetric --cipher-algo AES256 -o "$PASSWORD_FILE" temp.txt
+            	rm temp.txt
+            	echo "[✅] Mot de passe ajouté."
+            	;;
+
+	5)
+		 read -p "[❓] Êtes-vous sûr de vouloir quitter ? (o/n) : " confirm
+    			if [[ "$confirm" =~ ^[oO]$ ]]; then
+       				echo "[👋] Au revoir !"
+        			exit 0
+    			else
+        			echo "[🔄] Retour au menu."
+    			fi
+   		 ;;
+	esac
+done
+
