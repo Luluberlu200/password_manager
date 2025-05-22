@@ -34,6 +34,8 @@ if [ ! -f "$FICHIER_ENC" ]; then
     read -p "Entrez 1 ou 2 : " choix
     echo
 
+    echo
+
     if [[ "$choix" == "1" ]]; then
     
 	    echo -n "Crée ton mot de passe maître : "
@@ -70,7 +72,7 @@ if [ ! -f "$FICHIER_ENC" ]; then
          exit 1
     fi
     	
-    openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
+    openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
     shred -u "$TMPFILE"
     echo "Fichier chiffré créé avec succès : $FICHIER_ENC"
     exit 0
@@ -84,7 +86,7 @@ read -s MDP
 echo
 
 # Déchiffrer le fichier
-openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
 
 # Vérifie si le déchiffrement a réussi
 if [ $? -ne 0 ]; then
@@ -95,7 +97,7 @@ fi
 
 
 # rechiffrer le fichier 
-openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
 shred -u "$TMPFILE"
 
 echo "Fichier mis à jour et rechiffré avec succès."
@@ -118,6 +120,7 @@ while true; do
         echo
         read -p "📋 Entrez votre choix : " choice
         echo
+        echo
 
 	case "$choice" in
 	1)
@@ -127,7 +130,7 @@ while true; do
         echo
 
         # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
-        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
@@ -138,7 +141,7 @@ while true; do
         echo "$id_logiciel : $id -> $pwd" >> "$TMPFILE"
 
         # Permet de rechiffrer le fichier après avoir ajouté les données
-        openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+        openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
 
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
@@ -149,15 +152,21 @@ while true; do
         echo -e "\e[1m=== [📖] Consulter un mot de passe ===\e[0m"
         echo
         # Déchiffrer temporairement le fichier pour consulter le mot de passe
-        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
             exit 1
         fi
 
-        # Afficher le contenu du fichier temporaire
-        cat "$TMPFILE"
+        if [ -s "$TMPFILE" ]; then
+            cat "$TMPFILE"
+        else
+            echo "[ℹ️] Aucun mot de passe enregistré :c"
+        fi
+
+
+        openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
 
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
