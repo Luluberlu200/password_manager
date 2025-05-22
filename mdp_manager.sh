@@ -124,7 +124,8 @@ while true; do
 
 	case "$choice" in
 	1)
-        echo -e "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"        read -p "💻 Outil/logiciel/site : " id_logiciel
+        echo -e "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"        
+        read -p "💻 Outil/logiciel/site : " id_logiciel
         read -p "📧 Adresse mail / nom utilisateur : " id
         read -s -p "🔒 Mot de passe : " pwd
         echo
@@ -146,6 +147,7 @@ while true; do
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
         
+        echo
         echo "[✅] Mot de passe ajouté."
         ;;
     2)
@@ -177,7 +179,7 @@ while true; do
         echo
 
         # Déchiffrer temporairement le fichier pour modification
-        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
             exit 1
@@ -185,6 +187,7 @@ while true; do
 
         # Afficher les entrées existantes
         echo "=== [📖] Liste des mots de passe ==="
+        echo
         cat -n "$TMPFILE"
         echo
 
@@ -214,11 +217,12 @@ while true; do
         sed -i "${line_number}s/.*/$new_id_logiciel : $new_id -> $new_pwd/" "$TMPFILE"
 
         # Rechiffrer le fichier après modification
-        openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+        openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
 
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
 
+        echo
         echo "[✅] Mot de passe modifié avec succès."
         ;;
 	5)
