@@ -24,14 +24,14 @@ mot_passe_random() {
 
 # Vérifie si le fichier est crée
 if [ ! -f "$FICHIER_ENC" ]; then
-    echo "Aucun fichier chiffré trouvé."
-    echo "Création initiale du fichier 'password_manager.txt'."
-    echo -n
-
-    echo "Souhaitez-vous choisir votre mot de passe ?"
-    echo "1. Mot de passe personnalisé"
-    echo "2. Générer un mot de passe aléatoire"
-    read -p "Entrez 1 ou 2 : " choix
+    echo -e "\n[ℹ️] Aucun fichier chiffré trouvé."
+    echo -e "[🔐] Création initiale du fichier : \e[1mpassword_manager.txt\e[0m\n" #met en gras le fichier
+    
+    echo -e "Veuillez choisir une option pour créer votre mot de passe maître :"
+    echo -e "  1️⃣  Choisir un mot de passe personnalisé"
+    echo -e "  2️⃣  Générer un mot de passe aléatoire\n"
+    1
+    read -p "[👉] Entrez 1 ou 2 : " choix
     
     if [[ "$choix" == "1" ]]; then
     
@@ -59,7 +59,7 @@ if [ ! -f "$FICHIER_ENC" ]; then
     	 read -p "Voulez-vous valider ce mot de passe (Yes/No) ? " validation
 
          if [[ "$validation" == "Yes" || "$validation" == "yes" ]]; then
-         	echo "Mot de passe validé."
+         	echo "[✅]Mot de passe validé."
 	 elif [[ "$validation" == "No" || "$validation" == "no" ]]; then 
 		exit 1
 	    fi
@@ -72,8 +72,8 @@ if [ ! -f "$FICHIER_ENC" ]; then
     
     
 
-    nano "$TMPFILE"
-    openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
+    #nano "$TMPFILE"
+    openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
     shred -u "$TMPFILE"
     echo "Fichier chiffré créé avec succès : $FICHIER_ENC"
     exit 0
@@ -87,22 +87,19 @@ read -s MDP
 echo
 
 # Déchiffrer le fichier
-openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
 
 # Vérifie si le déchiffrement a réussi
 if [ $? -ne 0 ]; then
-    echo "Mot de passe incorrect"
+    echo "[❌]Mot de passe incorrect"
     rm -f "$TMPFILE"
     exit 1
 fi
 
-##################################################################################################################
-nano "$TMPFILE"
 
-###################################################################################################################
 
 # rechiffrer le fichier 
-openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
 shred -u "$TMPFILE"
 
 echo "Fichier mis à jour et rechiffré avec succès."
@@ -121,12 +118,13 @@ while true; do
 	case "$choice" in
 	1)
 		echo "=== Ajouter un nouveau mot de passe ==="
+
         read -p "Adresse mail / nom utilisateur : " id
         read -s -p "Mot de passe : " pwd
         echo
 
         # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
-        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
@@ -144,6 +142,8 @@ while true; do
         
         echo "[✅] Mot de passe ajouté."
         ;;
+    
+
 	5)
 		 read -p "[❓] Êtes-vous sûr de vouloir quitter ? (o/n) : " confirm
     			if [[ "$confirm" =~ ^[oO]$ ]]; then
