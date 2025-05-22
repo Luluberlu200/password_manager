@@ -69,10 +69,6 @@ if [ ! -f "$FICHIER_ENC" ]; then
          exit 1
     fi
     	
-    
-    
-
-    nano "$TMPFILE"
     openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
     shred -u "$TMPFILE"
     echo "Fichier chiffré créé avec succès : $FICHIER_ENC"
@@ -96,10 +92,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-##################################################################################################################
-nano "$TMPFILE"
-
-###################################################################################################################
 
 # rechiffrer le fichier 
 openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
