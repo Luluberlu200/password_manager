@@ -146,8 +146,8 @@ while true; do
         echo "[✅] Mot de passe ajouté."
         ;;
     2)
-    echo -e "\e[1m=== [📖] Consulter un mot de passe ===\e[0m"
-    echo
+        echo -e "\e[1m=== [📖] Consulter un mot de passe ===\e[0m"
+        echo
         # Déchiffrer temporairement le fichier pour consulter le mot de passe
         openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         # Vérifie si le déchiffrement a réussi
@@ -162,6 +162,55 @@ while true; do
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
         
+        ;;
+    3)
+        echo -e "\e[1m=== [✏️] Modifier un mot de passe ===\e[0m"
+        echo
+
+        # Déchiffrer temporairement le fichier pour modification
+        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
+            exit 1
+        fi
+
+        # Afficher les entrées existantes
+        echo "=== [📖] Liste des mots de passe ==="
+        cat -n "$TMPFILE"
+        echo
+
+        # Demander à l'utilisateur quelle ligne modifier
+        read -p "Entrez le numéro de la ligne à modifier : " line_number
+        if ! [[ "$line_number" =~ ^[0-9]+$ ]]; then
+            echo "[❌] Entrée invalide. Veuillez entrer un numéro de ligne valide."
+            shred -u "$TMPFILE"
+            exit 1
+        fi
+
+        # Vérifier si la ligne existe
+        total_lines=$(wc -l < "$TMPFILE")
+        if [ "$line_number" -lt 1 ] || [ "$line_number" -gt "$total_lines" ]; then
+            echo "[❌] Numéro de ligne invalide."
+            shred -u "$TMPFILE"
+            exit 1
+        fi
+
+        # Demander les nouvelles informations
+        read -p "💻 Nouveau outil/logiciel/site : " new_id_logiciel
+        read -p "📧 Nouvelle adresse mail / nom utilisateur : " new_id
+        read -s -p "🔒 Nouveau mot de passe : " new_pwd
+        echo
+
+        # Modifier la ligne spécifiée
+        sed -i "${line_number}s/.*/$new_id_logiciel : $new_id -> $new_pwd/" "$TMPFILE"
+
+        # Rechiffrer le fichier après modification
+        openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+
+        # Supprimer le fichier temporaire pour des raisons de sécurité
+        shred -u "$TMPFILE"
+
+        echo "[✅] Mot de passe modifié avec succès."
         ;;
 	5)
             read -p "\e[1m[❓] Êtes-vous sûr de vouloir quitter ? (o/n) :\e[0m" confirm    			
