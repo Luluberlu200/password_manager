@@ -16,28 +16,59 @@ force_password() {
     
     return 0
 }
+mot_passe_random() {
+    < /dev/urandom tr -dc 'A-Za-z0-9_@#%' | head -c 12
+    
+    return 0
+}
 
 # Vérifie si le fichier est crée
 if [ ! -f "$FICHIER_ENC" ]; then
     echo "Aucun fichier chiffré trouvé."
     echo "Création initiale du fichier 'password_manager.txt'."
+    echo -n
 
-    echo -n "Crée ton mot de passe maître : "
-    read -s MDP1
+    echo "Souhaitez-vous choisir votre mot de passe ?"
+    echo "1. Mot de passe personnalisé"
+    echo "2. Générer un mot de passe aléatoire"
+    read -p "Entrez 1 ou 2 : " choix
     
-    if ! force_password "$MDP1"; then
-    exit 1
-    fi
+    if [[ "$choix" == "1" ]]; then
     
-    echo
-    echo -n "Confirme ton mot de passe : "
-    read -s MDP2
-    echo
+	    echo -n "Crée ton mot de passe maître : "
+	    read -s MDP1
+	    
+	    if ! force_password "$MDP1"; then
+	    exit 1
+	    fi
+	    
+	    echo
+	    echo -n "Confirme ton mot de passe : "
+	    read -s MDP2
+	    echo
 
-    if [ "$MDP1" != "$MDP2" ]; then
-        echo "Mots de passe différents"
-        exit 1
+	    if [ "$MDP1" != "$MDP2" ]; then
+		echo "Mots de passe différents"
+		exit 1
+	    fi
+	    
+    elif [[ "$choix" == "2" ]]; then
+    	 MDP1=$(mot_passe_random)
+    	 echo "Mot de passe généré : $MDP1"
+    	 
+    	 read -p "Voulez-vous valider ce mot de passe (Yes/No) ? " validation
+
+         if [[ "$validation" == "Yes" || "$validation" == "yes" ]]; then
+         	echo "Mot de passe validé."
+	 elif [[ "$validation" == "No" || "$validation" == "no" ]]; then 
+		exit 1
+	    fi
+    	 
+    else
+    	 echo "Choix invalide. Veuillez entrer 1 ou 2."
+         exit 1
     fi
+    	
     
     
 
