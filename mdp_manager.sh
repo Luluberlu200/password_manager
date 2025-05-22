@@ -82,7 +82,7 @@ while true; do
         echo "===Gestionnaire Password===="
         echo "1. Ajouter un mot de passe"
         echo "2. Consulter mode de passe"
-	echo "3. Modification d'un/des mot(s) de passe"
+	    echo "3. Modification d'un/des mot(s) de passe"
         echo "4. Delete mot de passe"
         echo "5. Quitter"
         read -p "choix : " choice
@@ -90,16 +90,29 @@ while true; do
 	case "$choice" in
 	1)
 		echo "=== Ajouter un nouveau mot de passe ==="
-            	read -p "Adresse mail / nom utilisateur : " id
-           	read -s -p "Mot de passe : " pwd
-            	echo
-            	gpg -d "$PASSWORD_FILE" > temp.txt 2>/dev/null
-            	echo "$id -> $pwd" >> temp.txt
-            	gpg --symmetric --cipher-algo AES256 -o "$PASSWORD_FILE" temp.txt
-            	rm temp.txt
-            	echo "[✅] Mot de passe ajouté."
-            	;;
+        read -p "Adresse mail / nom utilisateur : " id
+        read -s -p "Mot de passe : " pwd
+        echo
 
+        # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
+        openssl enc -d -aes-256-cbc -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        # Vérifie si le déchiffrement a réussi
+        if [ $? -ne 0 ]; then
+            echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
+            exit 1
+        fi
+
+        # Ajouter les nouvelles données au fichier dédié
+        echo "$id -> $pwd" >> "$TMPFILE"
+
+        # Permet de rechiffrer le fichier après avoir ajouté les données
+        openssl enc -aes-256-cbc -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+
+        # Supprimer le fichier temporaire pour des raisons de sécurité
+        shred -u "$TMPFILE"
+        
+        echo "[✅] Mot de passe ajouté."
+        ;;
 	5)
 		 read -p "[❓] Êtes-vous sûr de vouloir quitter ? (o/n) : " confirm
     			if [[ "$confirm" =~ ^[oO]$ ]]; then
