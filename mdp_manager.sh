@@ -121,8 +121,7 @@ while true; do
 
 	case "$choice" in
 	1)
-		echo "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"
-        read -p "💻 Outil/logiciel/site : " id_logiciel
+        echo -e "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"        read -p "💻 Outil/logiciel/site : " id_logiciel
         read -p "📧 Adresse mail / nom utilisateur : " id
         read -s -p "🔒 Mot de passe : " pwd
         echo
