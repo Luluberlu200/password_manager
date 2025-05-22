@@ -17,8 +17,6 @@ force_password() {
     return 0
 }
 
-
-
 # Vérifie si le fichier est crée
 if [ ! -f "$FICHIER_ENC" ]; then
     echo "Aucun fichier chiffré trouvé."
@@ -78,10 +76,12 @@ shred -u "$TMPFILE"
 
 echo "Fichier mis à jour et rechiffré avec succès."
 
+# === MENU ===
+# Affiche le menu principal
 while true; do 
         echo "===Gestionnaire Password===="
         echo "1. Ajouter un mot de passe"
-        echo "2. Consulter mode de passe"
+        echo "2. Consulter mot de passe"
 	    echo "3. Modification d'un/des mot(s) de passe"
         echo "4. Delete mot de passe"
         echo "5. Quitter"
