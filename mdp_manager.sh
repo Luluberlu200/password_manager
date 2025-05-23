@@ -218,7 +218,9 @@ while true; do
         echo "2. 📧 Adresse mail / nom utilisateur"
         echo "3. 🔒 Mot de passe"
         echo "4. Modifier tout"
+        echo
         read -p "Entrez votre choix (1-4) : " modify_choice
+        echo
 
         # Variables pour stocker les nouvelles données
         new_id_logiciel=$(echo "$selected_line" | cut -d':' -f1 | xargs)
