@@ -2,7 +2,7 @@
 
 FICHIER_ENC="password_manager.txt.enc"
 
-# Fichier temporaire déchiffré (pour pouvoir le modifié/consulter)
+# Fichier temporaire déchiffré (pour pouvoir le modifier/consulter)
 TMPFILE=$(mktemp)
 
 
