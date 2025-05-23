@@ -172,6 +172,7 @@ while true; do
 
         # Supprimer le fichier temporaire pour des raisons de sécurité
         shred -u "$TMPFILE"
+
         
         ;;
     3)
@@ -264,6 +265,42 @@ while true; do
         echo
         echo "[✅] Mot de passe modifié avec succès."
         ;;
+
+    4)
+        echo -e "\e[1m=== [🗑️] Supprimer un mot de passe ===\e[0m"
+        echo
+
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+
+        if [ $? -ne 0 ]; then
+            echo "[❌] Erreur : Impossible de déchiffrer le fichier."
+            exit 1
+        fi
+
+        # Affiche le contenu avec numéro de ligne
+        echo "[📄] Liste des entrées enregistrées :"
+        nl -w2 -s". " "$TMPFILE"
+
+        echo
+        read -p "[❓] Entrez le numéro de la ligne à supprimer : " ligne
+
+        # Vérifie que le numéro est bien un entier positif
+        if ! [[ "$ligne" =~ ^[0-9]+$ ]]; then
+            echo "[⚠️] Numéro invalide."
+            shred -u "$TMPFILE"
+            continue
+        fi
+
+        # Supprime la ligne choisie
+        sed -i "${ligne}d" "$TMPFILE"
+
+        # Rechiffre
+        openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
+        shred -u "$TMPFILE"
+
+        echo "[✅] Entrée supprimée avec succès."
+        ;;
+    
 	5)
             read -p "\e[1m[❓] Êtes-vous sûr de vouloir quitter ? (o/n) :\e[0m" confirm    			
             if [[ "$confirm" =~ ^[oO]$ ]]; then
