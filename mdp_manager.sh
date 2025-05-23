@@ -207,11 +207,48 @@ while true; do
             exit 1
         fi
 
-        # Demander les nouvelles informations
-        read -p "💻 Nouveau outil/logiciel/site : " new_id_logiciel
-        read -p "📧 Nouvelle adresse mail / nom utilisateur : " new_id
-        read -s -p "🔒 Nouveau mot de passe : " new_pwd
+        # Afficher la ligne sélectionnée
+        selected_line=$(sed -n "${line_number}p" "$TMPFILE")
+        echo "Ligne sélectionnée : $selected_line"
         echo
+
+        # Demander quelles données modifier
+        echo "Que souhaitez-vous modifier ?"
+        echo "1. 💻 Outil/logiciel/site"
+        echo "2. 📧 Adresse mail / nom utilisateur"
+        echo "3. 🔒 Mot de passe"
+        echo "4. Modifier tout"
+        read -p "Entrez votre choix (1-4) : " modify_choice
+
+        # Variables pour stocker les nouvelles données
+        new_id_logiciel=$(echo "$selected_line" | cut -d':' -f1 | xargs)
+        new_id=$(echo "$selected_line" | cut -d'>' -f1 | cut -d':' -f2 | xargs)
+        new_pwd=$(echo "$selected_line" | cut -d'>' -f2 | xargs)
+
+        # Modifier en fonction du choix
+        case "$modify_choice" in
+            1)
+                read -p "💻 Nouveau outil/logiciel/site : " new_id_logiciel
+                ;;
+            2)
+                read -p "📧 Nouvelle adresse mail / nom utilisateur : " new_id
+                ;;
+            3)
+                read -s -p "🔒 Nouveau mot de passe : " new_pwd
+                echo
+                ;;
+            4)
+                read -p "💻 Nouveau outil/logiciel/site : " new_id_logiciel
+                read -p "📧 Nouvelle adresse mail / nom utilisateur : " new_id
+                read -s -p "🔒 Nouveau mot de passe : " new_pwd
+                echo
+                ;;
+            *)
+                echo "[❌] Choix invalide."
+                shred -u "$TMPFILE"
+                exit 1
+                ;;
+        esac
 
         # Modifier la ligne spécifiée
         sed -i "${line_number}s/.*/$new_id_logiciel : $new_id -> $new_pwd/" "$TMPFILE"
