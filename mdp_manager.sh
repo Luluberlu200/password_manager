@@ -124,8 +124,23 @@ while true; do
 		echo "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"
         read -p "💻 Outil/logiciel/site : " id_logiciel
         read -p "📧 Adresse mail / nom utilisateur : " id
-        read -s -p "🔒 Mot de passe : " pwd
-        echo
+    
+        echo "🔐 Souhaitez-vous :"
+        echo "1) Saisir mot de passe "
+        echo "2) Générer mot de passe aléatoire "
+        read -p  "Entrez votre choix : " choix_mdp
+
+
+        if [ "$choix_mdp" == "1" ]; then
+            read -s -p "✍️ Entrez le mot de passe : " pwd
+            echo
+        elif [ "$choix_mdp" == "2" ]; then
+            pwd=$(mot_passe_random)
+            echo "Mot de passe :$pwd"
+        else
+            echo "Choix invalide"
+            exit 1
+        fi
 
         # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
         openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
@@ -136,7 +151,7 @@ while true; do
         fi
 
         # Ajouter les nouvelles données au fichier dédié
-        echo "$id_logiciel : $id -> $pwd" >> "$TMPFILE"
+        echo "[$id_logiciel] User:$id -->Password : $pwd" >> "$TMPFILE"
 
         # Permet de rechiffrer le fichier après avoir ajouté les données
         openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
@@ -190,21 +205,15 @@ while true; do
         echo
         read -p "[❓] Entrez le numéro de la ligne à supprimer : " ligne
 
-        # Vérifie que le numéro est bien un entier positif
-        if ! [[ "$ligne" =~ ^[0-9]+$ ]]; then
-            echo "[⚠️] Numéro invalide."
-            shred -u "$TMPFILE"
-            continue
-        fi
+        
 
-        # Supprime la ligne choisie
+        
         sed -i "${ligne}d" "$TMPFILE"
 
-        # Rechiffre
         openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
         shred -u "$TMPFILE"
 
-        echo "[✅] Entrée supprimée avec succès."
+        echo "[✅] Supprimée."
         ;;
     
 	5)
