@@ -29,12 +29,14 @@ if [ ! -f "$FICHIER_ENC" ]; then
     echo "2. Générer un mot de passe aléatoire"
     read -p "Entrez 1 ou 2 : " choix
     echo
+
     if [[ "$choix" == "1" ]]; then
         echo -n "Crée ton mot de passe maître : "
         read -s MDP1
         if ! force_password "$MDP1"; then
             exit 1
         fi
+
         echo
         echo -n "Confirme ton mot de passe : "
         read -s MDP2
@@ -43,7 +45,9 @@ if [ ! -f "$FICHIER_ENC" ]; then
             echo "Mots de passe différents"
             exit 1
         fi
+
     elif [[ "$choix" == "2" ]]; then
+    
         MDP1=$(mot_passe_random)
         echo "Mot de passe généré : $MDP1"
         read -p "Voulez-vous valider ce mot de passe (Yes/No) ? " validation
@@ -52,9 +56,11 @@ if [ ! -f "$FICHIER_ENC" ]; then
         elif [[ "$validation" == "No" || "$validation" == "no" ]]; then
             exit 1
         fi
+
     else
         echo "Choix invalide. Veuillez entrer 1 ou 2."
         exit 1
+
     fi
     openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP1"
     shred -u "$TMPFILE"
@@ -97,19 +103,41 @@ while true; do
     echo
     read -p "📋 Entrez votre choix : " choice
     echo
+
     case "$choice" in
     1)
         echo -e "\e[1m=== [➕] Ajouter un nouveau mot de passe ===\e[0m"
         read -p "💻 Outil/logiciel/site : " id_logiciel
         read -p "📧 Adresse mail / nom utilisateur : " id
-        read -s -p "🔒 Mot de passe : " pwd
-        echo
+    
+        echo "Souhaitez-vous :"
+        echo "1) Saisir mot de passe "
+        echo "2) Générer mot de passe aléatoire "
+        read -p  "Entrez votre choix : " choix_mdp
+
+
+        if [ "$choix_mdp" == "1" ]; then
+            read -s -p "✍️ Entrez le mot de passe : " pwd
+            echo
+        elif [ "$choix_mdp" == "2" ]; then
+            pwd=$(mot_passe_random)
+            echo "Mot de passe :$pwd"
+        else
+            echo "Choix invalide"
+            exit 1
+        fi
+
+        # Déchiffrer temporairement le fichier pour ajouter le mot de passe ainsi que l'ID
         openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
             exit 1
         fi
+
+        # Ajouter les nouvelles données au fichier dédié
         echo "$id_logiciel : $id -> $pwd" >> "$TMPFILE"
+
+        # Permet de rechiffrer le fichier après avoir ajouté les données
         openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
         shred -u "$TMPFILE"
         echo "[✅] Mot de passe ajouté."
@@ -152,6 +180,7 @@ while true; do
             shred -u "$TMPFILE"
             exit 1
         fi
+
         selected_line=$(sed -n "${line_number}p" "$TMPFILE")
         echo "Ligne sélectionnée : $selected_line"
         echo
@@ -161,9 +190,11 @@ while true; do
         echo "3. 🔒 Mot de passe"
         echo "4. Modifier tout"
         read -p "Entrez votre choix (1-4) : " modify_choice
+
         new_id_logiciel=$(echo "$selected_line" | cut -d':' -f1 | xargs)
         new_id=$(echo "$selected_line" | cut -d'>' -f1 | cut -d':' -f2 | xargs)
         new_pwd=$(echo "$selected_line" | cut -d'>' -f2 | xargs)
+
         case "$modify_choice" in
             1) read -p "💻 Nouveau outil/logiciel/site : " new_id_logiciel ;;
             2) read -p "📧 Nouvelle adresse mail / nom utilisateur : " new_id ;;
@@ -180,6 +211,7 @@ while true; do
                 exit 1
                 ;;
         esac
+
         sed -i "${line_number}s/.*/$new_id_logiciel : $new_id -> $new_pwd/" "$TMPFILE"
         openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
         shred -u "$TMPFILE"
@@ -193,19 +225,18 @@ while true; do
             echo "[❌] Erreur : Impossible de déchiffrer le fichier."
             exit 1
         fi
+
         echo "[📄] Liste des entrées enregistrées :"
         nl -w2 -s". " "$TMPFILE"
         echo
         read -p "[❓] Entrez le numéro de la ligne à supprimer : " ligne
-        if ! [[ "$ligne" =~ ^[0-9]+$ ]]; then
-            echo "[⚠️] Numéro invalide."
-            shred -u "$TMPFILE"
-            continue
-        fi
+
         sed -i "${ligne}d" "$TMPFILE"
+
         openssl enc -aes-256-cbc -pbkdf2 -salt -in "$TMPFILE" -out "$FICHIER_ENC" -pass pass:"$MDP"
         shred -u "$TMPFILE"
-        echo "[✅] Entrée supprimée avec succès."
+
+        echo "[✅] Supprimée."
         ;;
     5)
         read -p "\e[1m[❓] Êtes-vous sûr de vouloir quitter ? (o/n) :\e[0m" confirm
