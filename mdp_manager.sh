@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# Nom du fichier chiffré contenant les mots de passe
 FICHIER_ENC="password_manager.txt.enc"
 
-# Fichier temporaire déchiffré (utilisé pour modifier ou consulter les données)
+# Fichier temporaire déchiffré (pour pouvoir le modifier/consulter)
 TMPFILE=$(mktemp)
 
-# Fonction pour vérifier si un mot de passe respecte les critères (minimum 8 caractères)
+# Vérifie si le mot de passe respecte les critères (minimum 8 caractères)
 force_password() {
     local password=$1
     
@@ -18,7 +17,7 @@ force_password() {
     return 0
 }
 
-# Fonction pour générer un mot de passe aléatoire de 12 caractères
+# Génère un mot de passe aléatoire de 12 caractères
 mot_passe_random() {
     < /dev/urandom tr -dc 'A-Za-z0-9_@#%' | head -c 12
     return 0
