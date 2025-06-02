@@ -125,7 +125,7 @@ while true; do
         read -p "💻 Outil/logiciel/site : " id_logiciel
         read -p "📧 Adresse mail / nom utilisateur : " id
     
-        echo "🔐 Souhaitez-vous :"
+        echo "Souhaitez-vous :"
         echo "1) Saisir mot de passe "
         echo "2) Générer mot de passe aléatoire "
         read -p  "Entrez votre choix : " choix_mdp
