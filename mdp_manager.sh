@@ -120,6 +120,8 @@ while true; do
             read -s -p "✍️ Entrez le mot de passe : " pwd
             echo
         elif [ "$choix_mdp" == "2" ]; then
+
+        # rajouter option pour mot de passe random personnalisable en longueur : 8 , 12, 16, 20 ;
             pwd=$(mot_passe_random)
             echo "Mot de passe :$pwd"
         else
