@@ -123,7 +123,8 @@ while true; do
             read -s -p "✍️ Entrez le mot de passe : " pwd # -s permet de ne pas afficher le mot de passe lors de la saisie, -p permet d'afficher le suivant qui suit
             echo
         elif [ "$choix_mdp" == "2" ]; then
-            pwd=$(mot_passe_random) # Appelle la fonction pour générer un mot de passe aléatoire
+        # rajouter option pour mot de passe random personnalisable en longueur : 8 , 12, 16, 20 ;
+            pwd=$(mot_passe_random)
             echo "Mot de passe :$pwd"
         else
             echo "Choix invalide"
