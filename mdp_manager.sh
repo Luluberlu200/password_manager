@@ -147,20 +147,44 @@ while true; do
         echo
         openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
         if [ $? -ne 0 ]; then
-            echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
+            echo "[❌] Erreur : Impossible de déchiffrer le fichier"
             exit 1
         fi
+
         if [ -s "$TMPFILE" ]; then
-            cat "$TMPFILE"
+            echo "Liste des outils/SItes  :"
+            awk -F':' '{print NR ". " $1}' "$TMPFILE"
+            echo
+            read -p "Quelle mot de passe voulez vous consulter (numéro ligne): " numero
+
+            line=$(sed -n "${numero}p" "$TMPFILE")
+
+            if [ -z "$line" ]; then
+                echo "[❌] Numéro invalide."
+                shred -u "$TMPFILE"
+                exit 1
+            fi
+
+            logiciel=$(echo "$line" | cut -d':' -f1 | xargs)
+            identifiant=$(echo "$line" | cut -d':' -f2 | cut -d'>' -f1 | xargs)
+            motdepasse=$(echo "$line" | cut -d'>' -f2 | xargs)
+
+            echo
+            echo "Outil/Site    : $logiciel"
+            echo "Identifiant : $identifiant"
+            echo "Mot de passe : $motdepasse"
+
+            echo "$motdepasse" | xclip -selection clipboard
+            echo "[✅] Mot de passe copié "
         else
-            echo "[ℹ️] Aucun mot de passe enregistré."
+            echo "pas de mot de passe"
         fi
         shred -u "$TMPFILE"
         ;;
     3)
         echo -e "\e[1m=== [✏️] Modifier un mot de passe ===\e[0m"
         echo
-        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null
+        openssl enc -d -aes-256-cbc -pbkdf2 -salt -in "$FICHIER_ENC" -out "$TMPFILE" -pass pass:"$MDP" 2>/dev/null 
         if [ $? -ne 0 ]; then
             echo "[❌] Erreur : Impossible de déchiffrer le fichier. Mot de passe maître incorrect ou fichier corrompu."
             exit 1
